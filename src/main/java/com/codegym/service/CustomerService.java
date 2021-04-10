@@ -8,6 +8,7 @@ import java.util.List;
 
 public class CustomerService implements ICustomerService {
     public static final String GET_ALL_CUSTOMER = "SELECT * FROM CUSTOMERS";
+    public static final String GET_CUSTOMER_BY_ID = "SELECT * FROM CUSTOMERS WHERE ID = ?";
     public static final String INSERT_CUSTOMER = "INSERT INTO CUSTOMERS (name,address) VALUES (?,?)";
 
     @Override
@@ -33,7 +34,23 @@ public class CustomerService implements ICustomerService {
 
     @Override
     public Customer findById(int id) {
-        return null;
+        Customer customer = null;
+        Connection connection = DatabaseConnection.getConnection();
+        if (connection != null) {
+            try {
+                PreparedStatement preparedStatement = connection.prepareStatement(GET_CUSTOMER_BY_ID);
+                preparedStatement.setInt(1, id);
+                ResultSet resultSet = preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    String name = resultSet.getString("name");
+                    String address = resultSet.getString("address");
+                    customer = new Customer(id, name, address);
+                }
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+        return customer;
     }
 
     @Override
@@ -50,8 +67,34 @@ public class CustomerService implements ICustomerService {
     }
 
     @Override
-    public void update(Customer customer, int id) {
+    public void insertUsingProcedure(Customer customer) {
+        Connection connection = DatabaseConnection.getConnection();
+        try {
+            CallableStatement callableStatement = connection.prepareCall(
+                    "call insert_customer_procedure(?,?);"
+            );
+            callableStatement.setString(1, customer.getName());
+            callableStatement.setString(2, customer.getAddress());
+            callableStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
+    @Override
+    public void update(Customer customer, int id) {
+        Connection connection = DatabaseConnection.getConnection();
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "UPDATE Customers set name = ?, address = ? where id = ?"
+            );
+            preparedStatement.setString(1, customer.getName());
+            preparedStatement.setString(2, customer.getAddress());
+            preparedStatement.setInt(3, id);
+            preparedStatement.executeUpdate();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
     }
 
     @Override

@@ -11,6 +11,8 @@ public interface ICustomerService {
 
     void insert(Customer customer);
 
+    void insertUsingProcedure(Customer customer);
+
     void update(Customer customer, int id);
 
     void remove(int id);

@@ -28,11 +28,28 @@ public class CustomerServlet extends HttpServlet {
                 showCreateForm(request, response);
                 break;
             }
+            case "edit": {
+                showEditForm(request, response);
+                break;
+            }
             default: {
                 showAll(request, response);
                 break;
             }
         }
+    }
+
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        Customer customer = customerService.findById(id);
+        RequestDispatcher dispatcher;
+        if (customer == null) {
+            dispatcher = request.getRequestDispatcher("error-404.jsp");
+        } else {
+            request.setAttribute("customer", customer);
+            dispatcher = request.getRequestDispatcher("customer/edit.jsp");
+        }
+        dispatcher.forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -58,14 +75,30 @@ public class CustomerServlet extends HttpServlet {
                 createNewCustomer(request, response);
                 break;
             }
+            case "edit": {
+                updateCustomer(request, response);
+                break;
+            }
         }
+    }
+
+    private void updateCustomer(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String name = request.getParameter("name");
+        String address = request.getParameter("address");
+        int id = Integer.parseInt(request.getParameter("id"));
+        Customer customer = new Customer(name, address);
+        customerService.update(customer, id);
+        String message = "Cập nhật thành công";
+        request.setAttribute("message", message);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("customer/edit.jsp");
+        dispatcher.forward(request, response);
     }
 
     private void createNewCustomer(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String name = request.getParameter("name");
         String address = request.getParameter("address");
         Customer customer = new Customer(name, address);
-        customerService.insert(customer);
+        customerService.insertUsingProcedure(customer);
         RequestDispatcher dispatcher = request.getRequestDispatcher("customer/create.jsp");
         dispatcher.forward(request, response);
     }

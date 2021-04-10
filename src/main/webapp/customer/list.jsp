@@ -11,6 +11,7 @@
     <tr>
         <td>Name</td>
         <td>Address</td>
+        <td>Edit</td>
     </tr>
     <c:forEach var="customer" items="${requestScope['customers']}">
         <tr>
@@ -19,6 +20,9 @@
             </td>
             <td>
                 <c:out value="${customer.address}"/>
+            </td>
+            <td>
+                <a href="/customers?action=edit&id=${customer.id}">Edit</a>
             </td>
         </tr>
     </c:forEach>
